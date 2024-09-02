@@ -11,4 +11,4 @@ class StateName:
         new_state.hideturtle()
         # new_state.color("yellow")
         new_state.goto(x, y)
-        new_state.write(arg=self.state, move=False, align="center", font=("Arial", 12, "normal"))
+        new_state.write(arg=self.state, move=False, align="center", font=("Arial", 10, "bold"))
