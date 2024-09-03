@@ -44,7 +44,7 @@ states_to_learn = []
 for state in states:
     if state not in guessed_states:
         states_to_learn.append(state)
-print(states_to_learn)
+print(guessed_states)
 
 states_to_learn_data = pd.DataFrame(states_to_learn)
 states_to_learn_data.to_csv("States_to_learn.csv")
