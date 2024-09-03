@@ -26,6 +26,8 @@ guessed_states = []
 while len(guessed_states) < 50:
     answer_state = screen.textinput(f"{guesses}/50", "Your guess:").title()
 
+    if answer_state == "Exit":
+        break
     if answer_state in states and answer_state not in guessed_states:
         state_data = states_data[states_data.state == answer_state]
         print(state_data)
@@ -37,5 +39,12 @@ while len(guessed_states) < 50:
         guessed_states.append(answer_state)
         guesses += 1
 
-    # screen.exitonclick()
-# turtle.mainloop()
+
+states_to_learn = []
+for state in states:
+    if state not in guessed_states:
+        states_to_learn.append(state)
+print(states_to_learn)
+
+states_to_learn_data = pd.DataFrame(states_to_learn)
+states_to_learn_data.to_csv("States_to_learn.csv")
