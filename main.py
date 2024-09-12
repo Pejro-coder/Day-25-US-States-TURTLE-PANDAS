@@ -1,109 +1,50 @@
-from tkinter import *
-import math
+import turtle
+import pandas as pd
+from state import StateName
 
-# ---------------------------- CONSTANTS ----------------------------------------- #
-PINK = "#e2979c"
-RED = "#e7305b"
-GREEN = "#9bdeac"
-YELLOW = "#f7f5dd"
-FONT_NAME = "Courier"
-WORK_MIN = 25
-SHORT_BREAK_MIN = 5
-LONG_BREAK_MIN = 20
-reps = 0
-timer = None
+# Load states data
+states_data = pd.read_csv("50_states.csv")
 
+# Get the states into a list
+states = states_data["state"].to_list()
+print(states)
 
-# ---------------------------- TIMER RESET --------------------------------------- #
-def reset_timer():
-    global reps
-    window.after_cancel(timer)
-    canvas.itemconfig(timer_text, text="00:00")
-    title.config(text="Pomodoro timer")
-    checkmarks.config(text="")
-    reps = 0
+# Initialize the Turtle screen
+screen = turtle.Screen()
 
+# Position the Turtle screen using `setup()`
+screen.setup(width=745, height=511, startx=2500, starty=-200)
 
-# ---------------------------- TIMER MECHANISM ----------------------------------- #
-def start_timer():
-    global reps
+# Add background image
+screen.addshape("blank_states_img.gif")
+turtle.shape("blank_states_img.gif")
 
-    # calculate time in seconds
-    work_sec = WORK_MIN * 60
-    short_break_sec = SHORT_BREAK_MIN * 60
-    long_break_sec = LONG_BREAK_MIN * 60
+guesses = 0
+guessed_states = []
 
-    # determine the timer type, based on reps
-    if reps == 8:
-        quit()
-    elif reps % 2 == 0:
-        count_down(work_sec)
-        title.config(text="Work", fg=GREEN)
-    elif reps % 7 == 0:
-        count_down(long_break_sec)
-        title.config(text="Long break", fg=RED)
-    else:
-        count_down(short_break_sec)
-        title.config(text="Break", fg=PINK)
-    print(reps)
-    reps += 1
+# Game loop
+while len(guessed_states) < 50:
+    answer_state = screen.textinput(f"{guesses}/50", "Your guess:").title()
+
+    if answer_state == "Exit":
+        break
+    if answer_state in states and answer_state not in guessed_states:
+        state_data = states_data[states_data.state == answer_state]
+        print(state_data)
+        state_x = state_data.x.item()
+        state_y = state_data.y.item()
+
+        state = StateName(answer_state)
+        state.add_state(state_x, state_y)
+        guessed_states.append(answer_state)
+        guesses += 1
 
 
-# ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
-def count_down(count):
-    minutes = math.floor(count / 60)
-    seconds = count % 60
-    if seconds < 10:
-        seconds = '0' + str(seconds)
-    time_left = f"{minutes}:{seconds}"
-    # canvas updaite is writen like this:
-    canvas.itemconfig(timer_text, text=time_left)
-    if count > 0:
-        global timer
-        timer = window.after(1000, count_down, count - 1) # WINDOW REFRESH SETTING <---------------------------
-    else:
-        start_timer()
-# adding checkmarks for each 25 min session complete
-        # check_marks = ""
-        # for item in range(0, reps):
-        #     if item > 0 and item % 2 != 0:
-        #         check_marks += "✔"
-        #         checkmarks.config(text=check_marks)
-        #
-        check_marks = "".join("✔" for item in range(0, reps) if item > 0 and item % 2 != 0)
-        checkmarks.config(text=check_marks)
+states_to_learn = []
+for state in states:
+    if state not in guessed_states:
+        states_to_learn.append(state)
+print(guessed_states)
 
-        # marks = ""
-        # work_sessions = math.floor(reps / 2)
-        # for _ in range(work_sessions):
-        #     marks += "✔"
-        # checkmarks.config(text=marks)
-
-
-# ---------------------------- UI SETUP ------------------------------------------ #
-window = Tk()
-window.title("Pomodoro")
-window.config(padx=60, pady=30, bg=YELLOW)
-
-# Picture
-canvas = Canvas(width=260, height=224, bg=YELLOW, highlightthickness=0)
-tomato = PhotoImage(file="tomato.png")
-canvas.create_image(130, 111, image=tomato)
-timer_text = canvas.create_text(130, 140, text="00:00", font=("Arial", 24, "bold"), fill="white")
-canvas.grid(column=1, row=1)
-
-# Labels
-title = Label(text="Pomodoro timer", font=("Arial", 24, "bold"), bg=YELLOW, fg=GREEN)
-title.grid(column=1, row=0)
-
-checkmarks = Label(font=("Arial", 24, "bold"), bg=YELLOW, fg=GREEN)
-checkmarks.grid(column=1, row=3)
-
-# Buttons
-start = Button(text="Start", command=start_timer)
-start.grid(column=0, row=2)
-
-reset = Button(text="Reset", bg="white", command=reset_timer)
-reset.grid(column=2, row=2)
-
-window.mainloop()
+states_to_learn_data = pd.DataFrame(states_to_learn)
+states_to_learn_data.to_csv("States_to_learn.csv")
